@@ -287,6 +287,78 @@
     }
 
 
+
+    /* =========================================
+       AR SCAN-HINWEIS (WebXR, Android)
+       ========================================= */
+
+    #ar-prompt {
+      position: absolute;
+      left: 50%;
+      bottom: max(40px, env(safe-area-inset-bottom));
+      transform: translateX(-50%);
+      width: min(320px, 86vw);
+      padding: 16px 18px;
+      border-radius: 18px;
+      background: rgba(17, 17, 17, 0.82);
+      color: #fff;
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.45;
+      display: none;
+    }
+
+    model-viewer[ar-status="session-started"] #ar-prompt {
+      display: block;
+    }
+
+    model-viewer[ar-tracking="not-tracking"] #ar-prompt .scan-text {
+      display: none;
+    }
+
+    #ar-prompt .lost-text {
+      display: none;
+    }
+
+    model-viewer[ar-tracking="not-tracking"] #ar-prompt .lost-text {
+      display: block;
+    }
+
+    .scan-icon {
+      width: 34px;
+      height: 54px;
+      margin: 0 auto 10px auto;
+      border: 3px solid #fff;
+      border-radius: 8px;
+      animation: scanSwing 2.2s ease-in-out infinite;
+    }
+
+    @keyframes scanSwing {
+      0%, 100% { transform: translateX(-26px) rotate(-8deg); }
+      50%      { transform: translateX(26px) rotate(8deg); }
+    }
+
+    #ar-error {
+      position: fixed;
+      left: 50%;
+      bottom: 110px;
+      transform: translateX(-50%);
+      width: min(340px, 88vw);
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: #111;
+      color: #fff;
+      font-size: 14px;
+      line-height: 1.45;
+      text-align: center;
+      display: none;
+      z-index: 10000;
+    }
+
+    #ar-error.visible {
+      display: block;
+    }
+
     /* Standard-Ladebalken von model-viewer ausblenden */
 
     model-viewer::part(default-progress-bar) {
@@ -369,6 +441,24 @@
 
 
     <!-- =========================================
+         AR SCAN-HINWEIS
+         ========================================= -->
+
+    <div id="ar-prompt" slot="ar-prompt">
+      <div class="scan-icon"></div>
+      <div class="scan-text">
+        Richte die Kamera auf eine <b>Wand</b> und bewege das
+        Handy langsam hin und her, bis die Karte erscheint.
+      </div>
+      <div class="lost-text">
+        Mehr Licht oder eine Wand mit etwas Struktur
+        (Bild, Schalter, Kante) hilft beim Erkennen.
+      </div>
+    </div>
+
+
+
+    <!-- =========================================
          AR BUTTON
          ========================================= -->
 
@@ -434,6 +524,14 @@
 
     </div>
 
+  </div>
+
+
+
+  <div id="ar-error">
+    AR konnte nicht gestartet werden. Bitte die Seite in
+    Chrome (Android) bzw. Safari (iPhone) öffnen und den
+    Kamerazugriff erlauben.
   </div>
 
 
@@ -676,6 +774,29 @@
       }
 
     }
+
+
+
+    /* =========================================
+       AR-STATUS: FEHLER ANZEIGEN
+       ========================================= */
+
+    const arError =
+      document.querySelector('#ar-error');
+
+    modelViewer.addEventListener(
+      'ar-status',
+      (event) => {
+        if (event.detail.status === 'failed') {
+          resetArLoading();
+          arError.classList.add('visible');
+          setTimeout(() => arError.classList.remove('visible'), 6000);
+        }
+        if (event.detail.status === 'session-started') {
+          resetArLoading();
+        }
+      }
+    );
 
 
   </script>
